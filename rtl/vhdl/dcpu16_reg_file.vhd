@@ -138,10 +138,10 @@ begin
 				end if;		
 				
 			end if;
-			
-			PC <= registers(REG_PC);
-			SP <= registers(REG_SP);
 		end if;			
 	end process;
+	
+	PC <= registers(REG_PC);
+	SP <= registers(REG_SP);
 
 end architecture;

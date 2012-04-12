@@ -19,7 +19,7 @@ end entity;
 architecture behaviour of dcpu16_top is
 
 signal mem_write : std_logic;
-signal mem_addr : std_logic_vector(15 downto 0);
+signal mem_rd_addr, mem_wr_addr : std_logic_vector(15 downto 0);
 signal mem_data, mem_wr_data : std_logic_vector(15 downto 0);
 
 signal opcode : std_logic_vector(OPCODE_WIDTH-1 downto 0);
@@ -36,7 +36,7 @@ signal pc_in_sel: std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0);
 signal sp_in_sel: std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0);
 signal ovfl_in_sel : std_logic_vector(OVFL_IN_SEL_WIDTH-1 downto 0);
 signal mem_write_int : std_logic;
-signal mem_sel : std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
+signal mem_sel_rd, mem_sel_wr : std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
 signal rega_in_sel : std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0);
 signal rega_write : std_logic;
 
@@ -46,7 +46,8 @@ begin
 		Clk => Clk,
 		Reset => Reset,
 		WriteEn => mem_write,
-		Address => mem_addr,
+		Rd_Address => mem_rd_addr,
+		Wr_Address => mem_wr_addr,
 		Q => mem_data,
 		DataIn => mem_wr_data
 	);
@@ -56,7 +57,8 @@ begin
 		Clk => Clk,
 		Reset => Reset,
 		mem_data => mem_data,
-		mem_addr_out => mem_addr,
+		mem_rd_addr_out => mem_rd_addr,
+		mem_wr_addr_out => mem_wr_addr,
 		mem_wr_out => mem_write,
 		opcode => opcode,
 		rega => rega,
@@ -76,7 +78,8 @@ begin
 		ovfl_in_sel => ovfl_in_sel,
 		mem_write => mem_write_int,
 		mem_wr_data => mem_wr_data,
-		mem_sel => mem_sel,
+		mem_sel_rd => mem_sel_rd,
+		mem_sel_wr => mem_sel_wr,
 		rega_in_sel => rega_in_sel,
 		rega_write => rega_write
 	);
@@ -102,7 +105,8 @@ begin
 		sp_in_sel => sp_in_sel,
 		ovfl_in_sel => ovfl_in_sel,
 		mem_write => mem_write_int,
-		mem_sel => mem_sel,
+		mem_sel_rd => mem_sel_rd,
+		mem_sel_wr => mem_sel_wr,
 		rega_in_sel => rega_in_sel,
 		rega_write => rega_write		
 	);

@@ -12,7 +12,8 @@ port (
 	
 	-- Memory Interface signals
 	mem_data : in std_logic_vector(MEM_WIDTH-1 downto 0);
-	mem_addr_out : out std_logic_vector(MEM_ADDR_WIDTH-1 downto 0); 
+	mem_rd_addr_out : out std_logic_vector(MEM_ADDR_WIDTH-1 downto 0); 
+	mem_wr_addr_out : out std_logic_vector(MEM_ADDR_WIDTH-1 downto 0); 
 	mem_wr_data : out std_logic_vector(MEM_ADDR_WIDTH-1 downto 0);
 	mem_wr_out : out std_logic;
 	
@@ -31,7 +32,7 @@ port (
 	sp_in_sel: in std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0);
 	ovfl_in_sel : in std_logic_vector(OVFL_IN_SEL_WIDTH-1 downto 0);
 	mem_write : in std_logic;
-	mem_sel : in std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
+	mem_sel_rd, mem_sel_wr : in std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
 	rega_in_sel : in std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0);
 	rega_write : in std_logic	
 );
@@ -41,7 +42,7 @@ architecture behaviour of dcpu16_datapath is
 	signal rega_int, regb_int : std_logic_vector(5 downto 0);
 	signal rega_val, regb_val, rega_in : std_logic_vector(15 downto 0);
 	signal alu_a, alu_b, alu_ovfl, alu_result : std_logic_vector(15 downto 0);
-	signal mem_addr, address_reg, instruction_reg, PC, SP : std_logic_vector(15 downto 0);
+	signal mem_rd_addr, mem_wr_addr, address_reg, instruction_reg, PC, SP : std_logic_vector(15 downto 0);
 	signal operand_reg_a, operand_reg_b : std_logic_vector(15 downto 0);
 begin
 	rega <= rega_int;
@@ -49,7 +50,8 @@ begin
 	rega_int <= instruction_reg(9 downto 4);
 	regb_int <= instruction_reg(15 downto 10);
 	opcode <= instruction_reg(3 downto 0);
-	mem_addr_out <= mem_addr;
+	mem_rd_addr_out <= mem_rd_addr;
+	mem_wr_addr_out <= mem_wr_addr;
 	mem_wr_out <= mem_write;
 	mem_wr_data <= rega_in;
 	
@@ -104,7 +106,7 @@ begin
 			if Reset = '1' then
 				address_reg <= (others => '0');
 			elsif ld_address = '1' then
-				address_reg <= mem_addr;
+				address_reg <= mem_rd_addr;
 			end if;
 		end if;	
 	end process;
@@ -123,33 +125,61 @@ begin
 		end if;	
 	end process;
 	
-	MemSelMux: process(mem_sel, PC, rega_val, regb_val, mem_data, address_reg)
+	MemSelMux: process(mem_sel_rd, PC, rega_val, regb_val, mem_data, address_reg)
 	begin
-		case mem_sel is
+		case mem_sel_rd is
 			when MEM_SEL_PC =>
-				mem_addr <= PC;
+				mem_rd_addr <= PC;
 			when MEM_SEL_REGA =>
-				mem_addr <= rega_val;
+				mem_rd_addr <= rega_val;
 			when MEM_SEL_REGB =>
-				mem_addr <= regb_val;
+				mem_rd_addr <= regb_val;
 			when MEM_SEL_REGA_SUB_1 =>
-				mem_addr <= rega_val - std_logic_vector(to_unsigned(1,16));
+				mem_rd_addr <= rega_val - std_logic_vector(to_unsigned(1,16));
 			when MEM_SEL_REGB_SUB_1 =>
-				mem_addr <= regb_val - std_logic_vector(to_unsigned(1,16));
+				mem_rd_addr <= regb_val - std_logic_vector(to_unsigned(1,16));
 			when MEM_SEL_NXT_WORD_ADD_REGA =>
-				mem_addr <= mem_data + rega_val;
+				mem_rd_addr <= mem_data + rega_val;
 			when MEM_SEL_NXT_WORD_ADD_REGB => 
-				mem_addr <= mem_data + regb_val;
+				mem_rd_addr <= mem_data + regb_val;
 			when MEM_SEL_NXT_WORD =>
-				mem_addr <= mem_data;
+				mem_rd_addr <= mem_data;
 			when MEM_SEL_PC_ADD_1 =>
-				mem_addr <= PC + std_logic_vector(to_unsigned(1,16));
+				mem_rd_addr <= PC + std_logic_vector(to_unsigned(1,16));
 			when MEM_SEL_ADDRESS_A =>
-				mem_addr <= address_reg;
+				mem_rd_addr <= address_reg;
 			when others =>
 				null;
 		end case;	
 	end process;
+	
+	MemWriteSelMux: process(mem_sel_wr, PC, rega_val, regb_val, mem_data, address_reg)
+	begin
+		case mem_sel_wr is
+			when MEM_SEL_PC =>
+				mem_wr_addr <= PC;
+			when MEM_SEL_REGA =>
+				mem_wr_addr <= rega_val;
+			when MEM_SEL_REGB =>
+				mem_wr_addr <= regb_val;
+			when MEM_SEL_REGA_SUB_1 =>
+				mem_wr_addr <= rega_val - std_logic_vector(to_unsigned(1,16));
+			when MEM_SEL_REGB_SUB_1 =>
+				mem_wr_addr <= regb_val - std_logic_vector(to_unsigned(1,16));
+			when MEM_SEL_NXT_WORD_ADD_REGA =>
+				mem_wr_addr <= mem_data + rega_val;
+			when MEM_SEL_NXT_WORD_ADD_REGB => 
+				mem_wr_addr <= mem_data + regb_val;
+			when MEM_SEL_NXT_WORD =>
+				mem_wr_addr <= mem_data;
+			when MEM_SEL_PC_ADD_1 =>
+				mem_wr_addr <= PC + std_logic_vector(to_unsigned(1,16));
+			when MEM_SEL_ADDRESS_A =>
+				mem_wr_addr <= address_reg;
+			when others =>
+				null;
+		end case;	
+	end process;	
 	
 	ALU_A_Mux: process(alu_a_in_sel, rega_val, operand_reg_a)
 	begin

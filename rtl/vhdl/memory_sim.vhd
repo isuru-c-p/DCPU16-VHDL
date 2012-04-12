@@ -11,7 +11,8 @@ entity memory_sim is
 port (
 	Clk, Reset : in std_logic;
 	WriteEn : in std_logic;
-	Address : in std_logic_vector(MEM_WIDTH-1 downto 0);
+	Wr_Address : in std_logic_vector(MEM_WIDTH-1 downto 0);
+	Rd_Address : in std_logic_vector(MEM_WIDTH-1 downto 0);
 	Q : out std_logic_vector(MEM_WIDTH-1 downto 0);
 	DataIn : in std_logic_vector(MEM_WIDTH-1 downto 0)
 );
@@ -29,10 +30,8 @@ begin
 		variable c : character;
 		variable memory_int : std_logic_vector(MEM_SIZE-1 downto 0);
 		variable memory_byte : std_logic_vector(7 downto 0);
-		variable memory_pos : integer := 0;
-		variable L : line;
-		
-		variable base_addr : integer := 0;
+		variable memory_pos : integer := 0;		
+		variable base_rd_addr, base_wr_addr : integer := 0;
 	begin
 		if rising_edge(Clk) then
 			if Reset = '1' then
@@ -51,13 +50,14 @@ begin
 				file_ready <= '1';
 				mem_reg <= memory_int;		
 			else
-				base_addr := CONV_INTEGER(Address) * MEM_WIDTH;
+				base_wr_addr := CONV_INTEGER(Wr_Address) * MEM_WIDTH;
+				base_rd_addr := CONV_INTEGER(Rd_Address) * MEM_WIDTH;
 			
 				if WriteEn = '1' then
-					mem_reg((base_addr+15) downto base_addr) <= DataIn;
+					mem_reg((base_wr_addr+15) downto base_wr_addr) <= DataIn;
 				end if;
 				
-				Q <= mem_reg((base_addr+15) downto base_addr);
+				Q <= mem_reg((base_rd_addr+15) downto base_rd_addr);
 			end if;
 		end if;	
 	end process;
