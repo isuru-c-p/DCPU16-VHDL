@@ -40,6 +40,7 @@ begin
 					registers(i) <= (others => '0');
 				end loop;
 			else
+				reg_literal_b_a := "00";
 		
 				case rega_sel is 
 					when REG_SEL =>
