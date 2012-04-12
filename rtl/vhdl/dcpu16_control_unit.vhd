@@ -94,6 +94,7 @@ begin
 					alu_start <= '0';
 					mem_write <= '0';
 					pc_in_sel <= PC_IN_PC;
+					mem_sel_rd <= MEM_SEL_PC;
 					sp_in_sel <= SP_IN_SP;
 					sp_in_sel_ex := SP_IN_SP;
 					
@@ -102,10 +103,12 @@ begin
 					ld_ir <= '0';
 					ovfl_in_sel <= OVFL_IN_OVFL;
 					mem_sel_rd <= MEM_SEL_PC;
+					pc_in_sel <= PC_IN_PC;
 					ld_operand <= "00";
 					mem_operand := "00";
 					read_mem_twice := "00";
 					rega_write_ex := '0';
+					sp_in_sel_ex := SP_IN_SP;
 					
 					if opcode /= NON_BASIC_OP then
 						-- register 
@@ -150,7 +153,7 @@ begin
 						-- SP
 						elsif (rega = std_logic_vector(to_unsigned(27, 6))) then
 							rega_sel <= REG_SP_SEL;
-							sp_in_sel <= SP_IN_REGA;
+							sp_in_sel_ex := SP_IN_REGA;
 							alu_a_in_sel <= ALU_SEL_REG;
 							mem_sel_a := MEM_SEL_PC;
 							rega_write_ex := '1';
@@ -176,7 +179,8 @@ begin
 							read_mem_twice(0) := '1';
 						-- trying to assign a literal --> skip to next instruction
 						elsif (rega > std_logic_vector(to_unsigned(30, 6))) then
-							pc_in_sel <= PC_IN_PC_ADD_1;
+							null;
+							--pc_in_sel <= PC_IN_PC_ADD_1;
 							--state <= FETCH;
 						end if;
 
@@ -341,7 +345,7 @@ begin
 					ld_operand(0) <= '1';
 					
 					if read_mem_twice(1) = '1' then
-						mem_sel_rd <= MEM_SEL_PC;
+						mem_sel_rd <= MEM_SEL_PC_ADD_1;
 						pc_in_sel <= PC_IN_PC_ADD_1;
 					else
 						pc_in_sel <= PC_IN_PC;
@@ -381,7 +385,7 @@ begin
 					if (opcode = IFE_OP) or (opcode = IFN_OP) or (opcode = IFG_OP) or (opcode = IFB_OP) then
 						if comparison_result = '0' then
 							pc_in_sel <= PC_IN_PC_ADD_2;
-							mem_sel_rd <= MEM_SEL_PC;
+							mem_sel_rd <= MEM_SEL_PC_ADD_2;
 						end if;
 					end if;
 								
