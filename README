@@ -1,0 +1,5 @@
+DCPU16-VHDL
+
+A VHDL implementation of the DCPU16 from 0x10c. 
+
+Current Status: Testing in simulation.
