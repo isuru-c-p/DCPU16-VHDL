@@ -78,6 +78,7 @@ package dcpu16_constants is
 	constant MEM_SEL_NXT_WORD : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "0111";
 	constant MEM_SEL_PC_ADD_1 : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1000";
 	constant MEM_SEL_ADDRESS_A : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1001";
+	constant MEM_SEL_PC_ADD_2 : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1010";
 	
 	-- ALU OP
 	constant ALU_OP_WIDTH : integer := 4;

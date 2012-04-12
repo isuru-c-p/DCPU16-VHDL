@@ -148,6 +148,8 @@ begin
 				mem_rd_addr <= PC + std_logic_vector(to_unsigned(1,16));
 			when MEM_SEL_ADDRESS_A =>
 				mem_rd_addr <= address_reg;
+			when MEM_SEL_PC_ADD_2 =>
+				mem_rd_addr <= PC + std_logic_vector(to_unsigned(2,16));
 			when others =>
 				null;
 		end case;	
@@ -176,6 +178,8 @@ begin
 				mem_wr_addr <= PC + std_logic_vector(to_unsigned(1,16));
 			when MEM_SEL_ADDRESS_A =>
 				mem_wr_addr <= address_reg;
+			when MEM_SEL_PC_ADD_2 =>
+				mem_wr_addr <= PC + std_logic_vector(to_unsigned(2,16));
 			when others =>
 				null;
 		end case;	
