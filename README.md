@@ -14,4 +14,4 @@ The target I will be testing my implementation on is an Altera Cyclone II FPGA o
 Current Status: 
 ---------------
 
-The core has currently only been tested in simulation using ModelSim. 
+The core is currently a WIP and is being tested in simulation using ModelSim. 
