@@ -26,21 +26,22 @@ package dcpu16_constants is
 	constant IFG_OP : std_logic_vector(OPCODE_WIDTH-1 downto 0) := "1110";
 	constant IFB_OP : std_logic_vector(OPCODE_WIDTH-1 downto 0) := "1111";
 	
-	constant PC_IN_SEL_WIDTH : integer := 2;
+	constant PC_IN_SEL_WIDTH : integer := 3;
 	
 	-- PC_IN_SEL
-	constant PC_IN_PC : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "00";
-	constant PC_IN_PC_ADD_1 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "01";
-	constant PC_IN_PC_ADD_2 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "10";
-	constant PC_IN_REGA : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "11";
+	constant PC_IN_PC : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "000";
+	constant PC_IN_PC_ADD_1 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "001";
+	constant PC_IN_PC_ADD_2 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "010";
+	constant PC_IN_PC_ADD_3 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "011";
+	constant PC_IN_REGA : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "100";
 
 	constant SP_IN_SEL_WIDTH : integer := 2;
 	
 	-- SP_IN_SEL
-	constant SP_IN_SP : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "00";
-	constant SP_IN_SP_ADD_1 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "01";
-	constant SP_IN_SP_SUB_1 : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "10";
-	constant SP_IN_REGA : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := "11";
+	constant SP_IN_SP : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0) := "00";
+	constant SP_IN_SP_ADD_1 : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0) := "01";
+	constant SP_IN_SP_SUB_1 : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0) := "10";
+	constant SP_IN_REGA : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0) := "11";
 	
 	-- OVFL_IN_SEL
 	constant OVFL_IN_SEL_WIDTH : integer := 2;

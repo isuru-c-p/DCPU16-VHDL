@@ -115,15 +115,18 @@ begin
 					end if;
 				end if;
 
-				
-				case pc_in_sel is
-					when PC_IN_PC_ADD_1 =>
-						registers(REG_PC) <= registers(REG_PC) + std_logic_vector(to_unsigned(1,16));
-					when PC_IN_PC_ADD_2 =>
-						registers(REG_PC) <= registers(REG_PC) + std_logic_vector(to_unsigned(2,16));
-					when others =>
-						null;
-				end case;
+				if (reg_index_a /= REG_PC) then
+					case pc_in_sel is
+						when PC_IN_PC_ADD_1 =>
+							registers(REG_PC) <= registers(REG_PC) + std_logic_vector(to_unsigned(1,16));
+						when PC_IN_PC_ADD_2 =>
+							registers(REG_PC) <= registers(REG_PC) + std_logic_vector(to_unsigned(2,16));
+						when PC_IN_PC_ADD_3 =>
+							registers(REG_PC) <= registers(REG_PC) + std_logic_vector(to_unsigned(3,16));
+						when others =>
+							null;
+					end case;
+				end if;
 				
 				case sp_in_sel is
 					when SP_IN_SP_ADD_1 =>

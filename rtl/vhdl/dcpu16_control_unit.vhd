@@ -30,6 +30,8 @@ end entity;
 architecture behaviour of dcpu16_control_unit is
 	type control_unit_state_type is (IDLE, FETCH, DECODE, GET_OPA_ADDR, GET_OPB_ADDR, READOPA, READOPB, EXECUTE, WRITEBACK);
 	signal state : control_unit_state_type := IDLE;
+	signal skip_instruction : std_logic := '0';
+	signal clear_skip : std_logic := '0';
 begin
 	transition: process(Clk)
 	begin
@@ -41,9 +43,15 @@ begin
 					when IDLE =>
 						state <= FETCH;
 					when FETCH =>
-						state <= DECODE;
+						clear_skip <= '0';
+						state <= DECODE;			
 					when DECODE =>
-						state <= GET_OPA_ADDR;
+						if skip_instruction = '0' then
+							state <= GET_OPA_ADDR;
+						else
+							clear_skip <= '1';
+							state <= IDLE;
+						end if;
 					when GET_OPA_ADDR =>
 						state <= READOPA;
 					when READOPA =>
@@ -63,6 +71,7 @@ begin
 
 	control: process(state, Reset, opcode, rega, regb, comparison_result)
 		variable mem_operand, read_mem_twice : std_logic_vector(1 downto 0) := "00";
+		variable branch_instr : std_logic := '0';
 		variable rega_write_ex : std_logic := '0';
 		variable sp_in_sel_ex : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0);
 		variable mem_sel_a : std_logic_vector(3 downto 0);
@@ -76,21 +85,28 @@ begin
 					ld_address <= '0';
 					rega_write <= '0';
 					rega_write_ex := '0';
+					skip_instruction <= '0';
 					alu_start <= '0';
 					mem_write <= '0';
 					pc_in_sel <= PC_IN_PC;
 					sp_in_sel <= SP_IN_SP;
 					sp_in_sel_ex := SP_IN_SP;
+					branch_instr := '0';
 					mem_sel_rd <= MEM_SEL_PC;
 					mem_sel_wr <= MEM_SEL_ADDRESS_A;
 				
 				when FETCH =>
+					if clear_skip = '1' then
+						skip_instruction <= '0';
+					end if;
+				
 					--state <= DECODE;
 					ld_ir <= '1';
 					ld_operand <= "00";
 					ld_address <= '0';
 					rega_write <= '0';
 					rega_write_ex := '0';
+					branch_instr := '0';
 					alu_start <= '0';
 					mem_write <= '0';
 					pc_in_sel <= PC_IN_PC;
@@ -108,8 +124,9 @@ begin
 					mem_operand := "00";
 					read_mem_twice := "00";
 					rega_write_ex := '0';
+					branch_instr := '0';
 					sp_in_sel_ex := SP_IN_SP;
-					
+										
 					if opcode /= NON_BASIC_OP then
 						-- register 
 						if rega < std_logic_vector(to_unsigned(8, 6)) then
@@ -258,6 +275,16 @@ begin
 							--read_mem_twice(1) := '1';
 						end if;
 					end if;
+										
+					if skip_instruction = '1' then					
+						if mem_operand(0) = '1' and mem_operand(1) = '1' then
+							pc_in_sel <= PC_IN_PC_ADD_3;
+						elsif mem_operand(0) = '1' or mem_operand(1) = '1' then
+							pc_in_sel <= PC_IN_PC_ADD_2;
+						else
+							pc_in_sel <= PC_IN_PC_ADD_1;
+						end if;
+					end if;
 					
 					if read_mem_twice(0) = '1' then
 						pc_in_sel <= PC_IN_PC_ADD_1;
@@ -318,16 +345,20 @@ begin
 							rega_in_sel <= REGA_IN_SEL_ALU;
 							
 						when IFE_OP =>
-							alu_op <= ALU_OP_EQUALS;							
+							alu_op <= ALU_OP_EQUALS;	
+							branch_instr := '1';
 							
 						when IFN_OP =>
-							alu_op <= ALU_OP_NOTEQUALS;
+							alu_op <= ALU_OP_NOTEQUALS;	
+							branch_instr := '1';
 							
 						when IFG_OP =>
-							alu_op <= ALU_OP_GREATER_THAN;
+							alu_op <= ALU_OP_GREATER_THAN;	
+							branch_instr := '1';
 							
 						when IFB_OP =>
-							alu_op <= ALU_OP_AND_NE_ZERO;
+							alu_op <= ALU_OP_AND_NE_ZERO;	
+							branch_instr := '1';
 							
 						when others =>
 							null;
@@ -364,18 +395,21 @@ begin
 				when EXECUTE =>	
 					ld_operand(1) <= '0';
 					sp_in_sel <= sp_in_sel_ex;
-					pc_in_sel <= PC_IN_PC;
-					alu_start <= '1';	
+					-- pc_in_sel <= PC_IN_PC;
+					alu_start <= '1';
+					pc_in_sel <= PC_IN_PC_ADD_1;					
 
 				when WRITEBACK =>
-					mem_sel_rd <= MEM_SEL_PC_ADD_1;
-					pc_in_sel <= PC_IN_PC_ADD_1;
+					mem_sel_rd <= MEM_SEL_PC;
+					-- mem_sel_rd <= MEM_SEL_PC_ADD_1;
+					--pc_in_sel <= PC_IN_PC_ADD_1;
+					pc_in_sel <= PC_IN_PC;
 					
 					alu_start <= '0';	
 					sp_in_sel <= SP_IN_SP;						
 					rega_write <= rega_write_ex;
 					
-					if mem_operand(0) = '1' then
+					if mem_operand(0) = '1' and branch_instr = '0' then
 						mem_sel_wr <= MEM_SEL_ADDRESS_A;
 						mem_write <= '1';
 					else
@@ -384,8 +418,11 @@ begin
 					
 					if (opcode = IFE_OP) or (opcode = IFN_OP) or (opcode = IFG_OP) or (opcode = IFB_OP) then
 						if comparison_result = '0' then
-							pc_in_sel <= PC_IN_PC_ADD_2;
-							mem_sel_rd <= MEM_SEL_PC_ADD_2;
+							skip_instruction <= '1';
+							--pc_in_sel <= PC_IN_PC_ADD_2;
+							--mem_sel_rd <= MEM_SEL_PC_ADD_2;
+						else
+							skip_instruction <= '0';
 						end if;
 					end if;
 								
