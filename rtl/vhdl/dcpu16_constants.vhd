@@ -3,6 +3,7 @@ use ieee.std_logic_1164.all;
 
 package dcpu16_constants is
 	constant OPCODE_WIDTH : integer := 4;
+	constant NONBASIC_OPCODE_WIDTH : integer := 6;
 	constant MEM_WIDTH : integer := 16;
 	constant MEM_ADDR_WIDTH : integer := 16;
 	constant MEM_SIZE : integer := 1048576;
@@ -25,6 +26,9 @@ package dcpu16_constants is
 	constant IFN_OP : std_logic_vector(OPCODE_WIDTH-1 downto 0) := "1101";
 	constant IFG_OP : std_logic_vector(OPCODE_WIDTH-1 downto 0) := "1110";
 	constant IFB_OP : std_logic_vector(OPCODE_WIDTH-1 downto 0) := "1111";
+	
+	-- NONBASIC_OPCODES
+	constant JSR_OP : std_logic_vector(NONBASIC_OPCODE_WIDTH-1 downto 0) := "000001";
 	
 	constant PC_IN_SEL_WIDTH : integer := 3;
 	
@@ -80,6 +84,8 @@ package dcpu16_constants is
 	constant MEM_SEL_PC_ADD_1 : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1000";
 	constant MEM_SEL_ADDRESS_A : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1001";
 	constant MEM_SEL_PC_ADD_2 : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1010";
+	constant MEM_SEL_PC_ADD_3 : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1011";
+	constant MEM_SEL_REG_A_IN : std_logic_vector(MEM_SEL_WIDTH-1 downto 0) := "1100";
 	
 	-- ALU OP
 	constant ALU_OP_WIDTH : integer := 4;
@@ -113,6 +119,17 @@ package dcpu16_constants is
 	constant REGA_IN_SEL_ALU : std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0) := "00";
 	constant REGA_IN_SEL_REGB : std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0) := "01";
 	constant REGA_IN_SEL_OPERAND : std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0) := "10";
+	
+	-- MEM_WR_SEL
+	constant MEM_WR_SEL_WIDTH : integer := 3;
+
+	constant MEM_WR_SEL_ALU : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "000";
+	constant MEM_WR_SEL_REGB : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "001";
+	constant MEM_WR_SEL_OPERAND : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "010";
+	constant MEM_WR_SEL_PC : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "011";
+	constant MEM_WR_SEL_PC_ADD_1 : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "100";
+	constant MEM_WR_SEL_PC_ADD_2 : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "101";
+	constant MEM_WR_SEL_PC_ADD_3 : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := "110";
 	
 	-- REGFILE constants
 	constant REG_A : integer := 0;

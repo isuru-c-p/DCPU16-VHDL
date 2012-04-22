@@ -8,6 +8,7 @@ use work.dcpu16_constants.all;
 entity dcpu16_control_unit is
 port ( 	Clk, Reset : in std_logic;
 		opcode : in std_logic_vector(OPCODE_WIDTH-1 downto 0);
+		nonbasic_opcode : in std_logic_vector(NONBASIC_OPCODE_WIDTH-1 downto 0);
 		rega, regb : in std_logic_vector(5 downto 0);
 		comparison_result : in std_logic;
 	    ld_ir : out std_logic;
@@ -23,6 +24,7 @@ port ( 	Clk, Reset : in std_logic;
 		mem_write : out std_logic;
 		mem_sel_rd, mem_sel_wr : out std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
 		rega_in_sel : out std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0);
+		mem_wr_sel : out std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0);
 		rega_write : out std_logic
 	 );
 end entity;
@@ -72,6 +74,8 @@ begin
 	control: process(state, Reset, opcode, rega, regb, comparison_result)
 		variable mem_operand, read_mem_twice : std_logic_vector(1 downto 0) := "00";
 		variable branch_instr : std_logic := '0';
+		variable next_instr_pc_sel : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := PC_IN_PC;
+		variable next_instr_pc_mem_wr_sel : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := MEM_WR_SEL_PC;
 		variable rega_write_ex : std_logic := '0';
 		variable sp_in_sel_ex : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0);
 		variable mem_sel_a : std_logic_vector(3 downto 0);
@@ -127,7 +131,7 @@ begin
 					branch_instr := '0';
 					sp_in_sel_ex := SP_IN_SP;
 										
-					if opcode /= NON_BASIC_OP then
+					--if opcode /= NON_BASIC_OP then
 						-- register 
 						if rega < std_logic_vector(to_unsigned(8, 6)) then
 							rega_sel <= REG_SEL;
@@ -274,16 +278,24 @@ begin
 							--mem_operand(1) := '1';
 							--read_mem_twice(1) := '1';
 						end if;
+					--end if;
+					
+					if mem_operand(0) = '1' and mem_operand(1) = '1' and opcode /= NON_BASIC_OP then
+						next_instr_pc_sel := PC_IN_PC_ADD_3;
+						next_instr_pc_mem_wr_sel := MEM_WR_SEL_PC_ADD_3;
+					elsif (mem_operand(0) = '1' or mem_operand(1) = '1') and opcode /= NON_BASIC_OP then
+						next_instr_pc_sel := PC_IN_PC_ADD_2;
+						next_instr_pc_mem_wr_sel := MEM_WR_SEL_PC_ADD_2;
+					elsif mem_operand(1) = '1' and opcode = NON_BASIC_OP then
+						next_instr_pc_sel := PC_IN_PC_ADD_2;
+						next_instr_pc_mem_wr_sel := MEM_WR_SEL_PC_ADD_2;
+					else
+						next_instr_pc_sel := PC_IN_PC_ADD_1;
+						next_instr_pc_mem_wr_sel := MEM_WR_SEL_PC_ADD_1;
 					end if;
-										
+					
 					if skip_instruction = '1' then					
-						if mem_operand(0) = '1' and mem_operand(1) = '1' then
-							pc_in_sel <= PC_IN_PC_ADD_3;
-						elsif mem_operand(0) = '1' or mem_operand(1) = '1' then
-							pc_in_sel <= PC_IN_PC_ADD_2;
-						else
-							pc_in_sel <= PC_IN_PC_ADD_1;
-						end if;
+						pc_in_sel <= next_instr_pc_sel;
 					end if;
 					
 					if read_mem_twice(0) = '1' then
@@ -293,56 +305,85 @@ begin
 									
 					case opcode is
 						when NON_BASIC_OP =>
-							-- not implemented yet
-							--pc_in_sel <= PC_IN_PC_ADD_1;
-							--state <= FETCH;
+							case nonbasic_opcode is
+								when JSR_OP =>
+									-- push PC to stack
+									rega_sel <= REG_SP_SEL;
+									sp_in_sel_ex := SP_IN_SP_ADD_1;
+									mem_sel_a := MEM_SEL_REGA;
+									
+									if mem_operand(1) = '1' then
+										rega_in_sel <= REGA_IN_SEL_OPERAND;
+									else
+										rega_in_sel <= REGA_IN_SEL_REGB; 
+									end if;
+									
+									mem_wr_sel <= next_instr_pc_mem_wr_sel;
+																		
+									mem_operand(0) := '1';
+									read_mem_twice(0) := '0';
+								when others =>
+									null;
+							end case;
 							
 						when SET_OP =>
 							if mem_operand(1) = '1' then
 								rega_in_sel <= REGA_IN_SEL_OPERAND;
+								mem_wr_sel <= MEM_WR_SEL_OPERAND;
 							else
 								rega_in_sel <= REGA_IN_SEL_REGB;
+								mem_wr_sel <= MEM_WR_SEL_REGB;
 							end if;
 							
 						when ADD_OP =>
 							alu_op <= ALU_OP_ADD;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 													
 						when SUB_OP =>
 							alu_op <= ALU_OP_SUB;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 						
 						when MUL_OP =>
 							alu_op <= ALU_OP_MUL;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 						
 						when DIV_OP =>
 							alu_op <= ALU_OP_DIV;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when MOD_OP =>
 							alu_op <= ALU_OP_MOD;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when SHL_OP =>
 							alu_op <= ALU_OP_SHL;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when SHR_OP =>
 							alu_op <= ALU_OP_SHR;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when AND_OP =>
 							alu_op <= ALU_OP_AND;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when BOR_OP =>
 							alu_op <= ALU_OP_BOR;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when XOR_OP =>
 							alu_op <= ALU_OP_XOR;
 							rega_in_sel <= REGA_IN_SEL_ALU;
+							mem_wr_sel <= MEM_WR_SEL_ALU;
 							
 						when IFE_OP =>
 							alu_op <= ALU_OP_EQUALS;	
@@ -372,6 +413,11 @@ begin
 					ld_address <= '1';
 				
 				when READOPA =>
+					if opcode = NON_BASIC_OP and nonbasic_opcode = JSR_OP then
+						rega_sel <= REG_PC_SEL;
+						rega_write_ex := '1';
+					end if;
+				
 					ld_address <= '0';
 					ld_operand(0) <= '1';
 					
@@ -400,7 +446,11 @@ begin
 					pc_in_sel <= PC_IN_PC_ADD_1;					
 
 				when WRITEBACK =>
-					mem_sel_rd <= MEM_SEL_PC;
+					if opcode = NON_BASIC_OP and nonbasic_opcode = JSR_OP then
+						mem_sel_rd <= MEM_SEL_REG_A_IN;
+					else			
+						mem_sel_rd <= MEM_SEL_PC;
+					end if;
 					-- mem_sel_rd <= MEM_SEL_PC_ADD_1;
 					--pc_in_sel <= PC_IN_PC_ADD_1;
 					pc_in_sel <= PC_IN_PC;

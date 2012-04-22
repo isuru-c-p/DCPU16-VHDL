@@ -19,6 +19,7 @@ port (
 	
 	-- Signals from/to Control Unit
 	opcode : out std_logic_vector(OPCODE_WIDTH-1 downto 0);
+	nonbasic_opcode : out std_logic_vector(NONBASIC_OPCODE_WIDTH-1 downto 0);
 	rega, regb : out std_logic_vector(5 downto 0);
 	comparison_result : out std_logic;
 	ld_ir : in std_logic;
@@ -34,6 +35,7 @@ port (
 	mem_write : in std_logic;
 	mem_sel_rd, mem_sel_wr : in std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
 	rega_in_sel : in std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0);
+	mem_wr_sel : in std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0);
 	rega_write : in std_logic	
 );
 end entity;
@@ -50,10 +52,11 @@ begin
 	rega_int <= instruction_reg(9 downto 4);
 	regb_int <= instruction_reg(15 downto 10);
 	opcode <= instruction_reg(3 downto 0);
+	nonbasic_opcode <= instruction_reg(9 downto 4);
 	mem_rd_addr_out <= mem_rd_addr;
 	mem_wr_addr_out <= mem_wr_addr;
 	mem_wr_out <= mem_write;
-	mem_wr_data <= rega_in;
+	--mem_wr_data <= rega_in;
 	
 	regfile0: entity work.dcpu16_reg_file
 	port map (
@@ -150,6 +153,8 @@ begin
 				mem_rd_addr <= address_reg;
 			when MEM_SEL_PC_ADD_2 =>
 				mem_rd_addr <= PC + std_logic_vector(to_unsigned(2,16));
+			when MEM_SEL_REG_A_IN =>
+				mem_rd_addr <= rega_in;
 			when others =>
 				null;
 		end case;	
@@ -220,6 +225,28 @@ begin
 				rega_in <= regb_val;
 			when REGA_IN_SEL_OPERAND =>
 				rega_in <= operand_reg_b;
+			when others =>
+				null;
+		end case;
+	end process;
+	
+	Mem_Wr_Mux: process(mem_wr_sel, alu_result, regb_val, operand_reg_b)
+	begin
+		case mem_wr_sel is
+			when MEM_WR_SEL_ALU =>
+				mem_wr_data <= alu_result;
+			when MEM_WR_SEL_REGB =>
+				mem_wr_data <= regb_val;
+			when MEM_WR_SEL_OPERAND =>
+				mem_wr_data <= operand_reg_b;
+			when MEM_WR_SEL_PC =>
+				mem_wr_data <= PC;
+			when MEM_WR_SEL_PC_ADD_1 =>
+				mem_wr_data <= PC + std_logic_vector(to_unsigned(1,16));
+			when MEM_WR_SEL_PC_ADD_2 =>
+				mem_wr_data <= PC + std_logic_vector(to_unsigned(2,16));
+			when MEM_WR_SEL_PC_ADD_3 =>
+				mem_wr_data <= PC + std_logic_vector(to_unsigned(3,16));
 			when others =>
 				null;
 		end case;

@@ -16,6 +16,7 @@ add wave -noupdate -format Logic -radix hexadecimal -label mem_write_int /dut/me
 add wave -noupdate -divider ControlUnit
 
 add wave -noupdate -format Literal -radix hexadecimal -label opcode /dut/opcode
+add wave -noupdate -format Literal -radix hexadecimal -label opcode /dut/nonbasic_opcode
 add wave -noupdate -format Logic -radix hexadecimal -label ld_ir /dut/ld_ir
 add wave -noupdate -format Logic -radix hexadecimal -label ld_address /dut/ld_address
 add wave -noupdate -format Logic -radix hexadecimal -label ld_operand /dut/ld_operand

@@ -23,6 +23,7 @@ signal mem_rd_addr, mem_wr_addr : std_logic_vector(15 downto 0);
 signal mem_data, mem_wr_data : std_logic_vector(15 downto 0);
 
 signal opcode : std_logic_vector(OPCODE_WIDTH-1 downto 0);
+signal nonbasic_opcode : std_logic_vector(NONBASIC_OPCODE_WIDTH-1 downto 0);
 signal rega, regb : std_logic_vector(5 downto 0);
 signal comparison_result : std_logic;
 signal ld_ir : std_logic;
@@ -38,6 +39,7 @@ signal ovfl_in_sel : std_logic_vector(OVFL_IN_SEL_WIDTH-1 downto 0);
 signal mem_write_int : std_logic;
 signal mem_sel_rd, mem_sel_wr : std_logic_vector(MEM_SEL_WIDTH-1 downto 0);
 signal rega_in_sel : std_logic_vector(REGA_IN_SEL_WIDTH-1 downto 0);
+signal mem_wr_sel : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0);
 signal rega_write : std_logic;
 
 begin
@@ -61,6 +63,7 @@ begin
 		mem_wr_addr_out => mem_wr_addr,
 		mem_wr_out => mem_write,
 		opcode => opcode,
+		nonbasic_opcode => nonbasic_opcode,
 		rega => rega,
 		regb => regb,
 		comparison_result => comparison_result,
@@ -81,6 +84,7 @@ begin
 		mem_sel_rd => mem_sel_rd,
 		mem_sel_wr => mem_sel_wr,
 		rega_in_sel => rega_in_sel,
+		mem_wr_sel => mem_wr_sel,
 		rega_write => rega_write
 	);
 
@@ -89,6 +93,7 @@ begin
 		Clk => Clk,
 		Reset => Reset,
 		opcode => opcode,
+		nonbasic_opcode => nonbasic_opcode,
 		rega => rega,
 		regb => regb,
 		comparison_result => comparison_result,
@@ -108,6 +113,7 @@ begin
 		mem_sel_rd => mem_sel_rd,
 		mem_sel_wr => mem_sel_wr,
 		rega_in_sel => rega_in_sel,
+		mem_wr_sel => mem_wr_sel,
 		rega_write => rega_write		
 	);
 	
