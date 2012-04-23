@@ -132,6 +132,7 @@ begin
 					rega_write_ex := '0';
 					branch_instr := '0';
 					pc_write := '0';
+					sp_in_sel <= SP_IN_SP;
 					sp_in_sel_ex := SP_IN_SP;
 										
 					--if opcode /= NON_BASIC_OP then
@@ -171,7 +172,7 @@ begin
 						elsif (rega = std_logic_vector(to_unsigned(26, 6))) then
 							rega_sel <= REG_SP_SEL;
 							sp_in_sel <= SP_IN_SP_SUB_1;
-							mem_sel_a := MEM_SEL_REGA;
+							mem_sel_a := MEM_SEL_REGA_SUB_1;
 							alu_a_in_sel <= ALU_SEL_OPERAND;
 							mem_operand(0) := '1';
 						-- SP

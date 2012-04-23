@@ -120,9 +120,9 @@ begin
 						registers(reg_index_a) <= rega_in;
 					elsif (reg_index_a = REG_SP) then --and (sp_in_sel = SP_IN_REGA) then
 						registers(reg_index_a) <= rega_in;
-					-- disallow setting of O flag for now (spec is ambiguous)
-					--elsif (reg_index_a = REG_O) and (ovfl_in_sel = OVFL_IN_REGA) then
-					--	registers(reg_index_a) <= rega_in;	
+					-- allow setting of O flag for now (spec is ambiguous)
+					elsif (reg_index_a = REG_O) then --and (ovfl_in_sel = OVFL_IN_REGA) then
+						registers(reg_index_a) <= rega_in;	
 					elsif (reg_index_a < REG_SP) then
 						registers(reg_index_a) <= rega_in;
 					end if;
