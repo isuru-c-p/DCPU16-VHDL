@@ -76,7 +76,7 @@ begin
 		variable branch_instr : std_logic := '0';
 		variable next_instr_pc_sel : std_logic_vector(PC_IN_SEL_WIDTH-1 downto 0) := PC_IN_PC;
 		variable next_instr_pc_mem_wr_sel : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0) := MEM_WR_SEL_PC;
-		variable rega_write_ex : std_logic := '0';
+		variable rega_write_ex, pc_write : std_logic := '0';
 		variable sp_in_sel_ex : std_logic_vector(SP_IN_SEL_WIDTH-1 downto 0);
 		variable mem_sel_a : std_logic_vector(3 downto 0);
 		variable mem_sel_b : std_logic_vector(3 downto 0);
@@ -96,6 +96,7 @@ begin
 					sp_in_sel <= SP_IN_SP;
 					sp_in_sel_ex := SP_IN_SP;
 					branch_instr := '0';
+					pc_write := '0';
 					mem_sel_rd <= MEM_SEL_PC;
 					mem_sel_wr <= MEM_SEL_ADDRESS_A;
 				
@@ -111,6 +112,7 @@ begin
 					rega_write <= '0';
 					rega_write_ex := '0';
 					branch_instr := '0';
+					pc_write := '0';
 					alu_start <= '0';
 					mem_write <= '0';
 					pc_in_sel <= PC_IN_PC;
@@ -129,6 +131,7 @@ begin
 					read_mem_twice := "00";
 					rega_write_ex := '0';
 					branch_instr := '0';
+					pc_write := '0';
 					sp_in_sel_ex := SP_IN_SP;
 										
 					--if opcode /= NON_BASIC_OP then
@@ -185,6 +188,7 @@ begin
 							alu_a_in_sel <= ALU_SEL_REG;
 							mem_sel_a := MEM_SEL_PC;
 							rega_write_ex := '1';
+							pc_write := '1';
 						-- O
 						elsif (rega = std_logic_vector(to_unsigned(29, 6))) then
 							rega_sel <= REG_OVFL_SEL;
@@ -311,6 +315,7 @@ begin
 									rega_sel <= REG_SP_SEL;
 									sp_in_sel_ex := SP_IN_SP_ADD_1;
 									mem_sel_a := MEM_SEL_REGA;
+									pc_write := '1';
 									
 									if mem_operand(1) = '1' then
 										rega_in_sel <= REGA_IN_SEL_OPERAND;
@@ -446,7 +451,7 @@ begin
 					pc_in_sel <= PC_IN_PC_ADD_1;					
 
 				when WRITEBACK =>
-					if opcode = NON_BASIC_OP and nonbasic_opcode = JSR_OP then
+					if pc_write = '1' then
 						mem_sel_rd <= MEM_SEL_REG_A_IN;
 					else			
 						mem_sel_rd <= MEM_SEL_PC;
