@@ -15,6 +15,7 @@ sim:
 	vcom $(OPTIONS) $(VHDL_DIR)/dcpu16_reg_file.vhd
 	vcom $(OPTIONS) $(VHDL_DIR)/dcpu16_datapath.vhd
 	vcom $(OPTIONS) $(VHDL_DIR)/dcpu16_control_unit.vhd
+	vcom $(OPTIONS) $(VHDL_DIR)/dcpu16_mmu.vhd
 	vcom $(OPTIONS) $(VHDL_DIR)/memory_sim.vhd
 	vcom $(OPTIONS) $(VHDL_DIR)/dcpu16_top.vhd
 	vcom $(OPTIONS) $(VHDL_DIR)/sim_testbench.vhd

@@ -18,9 +18,9 @@ end entity;
 
 architecture behaviour of dcpu16_top is
 
-signal mem_write : std_logic;
-signal mem_rd_addr, mem_wr_addr : std_logic_vector(15 downto 0);
-signal mem_data, mem_wr_data : std_logic_vector(15 downto 0);
+signal Mem_WriteEn, mem_write : std_logic;
+signal Mem_Wr_Address, Mem_Rd_Address, mem_rd_addr, mem_wr_addr : std_logic_vector(15 downto 0);
+signal Mem_Q, Mem_WriteData, mem_data, mem_wr_data : std_logic_vector(15 downto 0);
 
 signal opcode : std_logic_vector(OPCODE_WIDTH-1 downto 0);
 signal nonbasic_opcode : std_logic_vector(NONBASIC_OPCODE_WIDTH-1 downto 0);
@@ -43,15 +43,38 @@ signal mem_wr_sel : std_logic_vector(MEM_WR_SEL_WIDTH-1 downto 0);
 signal rega_write : std_logic;
 
 begin
+	mmu0: entity work.dcpu16_mmu
+	port map(
+		Clk => Clk,
+		Reset => Reset,
+		WriteEn_in => mem_write,
+		Rd_Address_in => mem_rd_addr,
+		Wr_Address_in => mem_wr_addr,
+		WriteData => mem_wr_data,
+		Q_out => mem_data,
+		
+		Mem_WriteEn_out => Mem_WriteEn,
+		Mem_Wr_Address_out => Mem_Wr_Address,
+		Mem_Rd_Address_out => Mem_Rd_Address,
+		Mem_Q_in => Mem_Q,
+		Mem_WriteData_out => Mem_WriteData,
+		
+		VGA_Controller_WriteEn_out => open,
+		VGA_Controller_Wr_Address_out => open,
+		VGA_Controller_Rd_Address_out => open,
+		VGA_Controller_Q_in => std_logic_vector(to_unsigned(0, 16)),
+		VGA_Controller_WriteData_out => open
+	);
+
 	memory0: entity work.memory_sim
 	port map(
 		Clk => Clk,
 		Reset => Reset,
-		WriteEn => mem_write,
-		Rd_Address => mem_rd_addr,
-		Wr_Address => mem_wr_addr,
-		Q => mem_data,
-		DataIn => mem_wr_data
+		WriteEn => Mem_WriteEn,
+		Rd_Address => Mem_Rd_Address,
+		Wr_Address => Mem_Wr_Address,
+		Q => Mem_Q,
+		DataIn => Mem_WriteData
 	);
 
 	datapath0: entity work.dcpu16_datapath
