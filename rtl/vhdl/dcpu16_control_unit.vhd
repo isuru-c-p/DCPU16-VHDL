@@ -462,8 +462,13 @@ begin
 					pc_in_sel <= PC_IN_PC;
 					
 					alu_start <= '0';	
-					sp_in_sel <= SP_IN_SP;						
-					rega_write <= rega_write_ex;
+					sp_in_sel <= SP_IN_SP;	
+
+					if branch_instr = '0' then
+						rega_write <= rega_write_ex;
+					else
+						rega_write <= '0';
+					end if;
 					
 					if mem_operand(0) = '1' and branch_instr = '0' then
 						mem_sel_wr <= MEM_SEL_ADDRESS_A;
